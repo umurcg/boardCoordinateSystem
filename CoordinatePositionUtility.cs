@@ -7,16 +7,16 @@ namespace BoardCoordinateSystem
     public class CoordinatePositionUtility
     {
         public Vector2 cellSize;
-        public Direction rowStartDirection = Direction.Up;
-        public Direction columnStartDirection = Direction.Left;
+        public bool rowStartFromTop = true;
+        public bool columnStartFromLeft = true;
         public Plane plane = Plane.XY;
 
         public Vector3 ConvertCoordinateToPosition(Coordinate coordinate)
         {
             var row = coordinate.row;
             var column = coordinate.column;
-            var x = columnStartDirection == Direction.Left ? column * cellSize.x : -column * cellSize.x;
-            var y = rowStartDirection == Direction.Up ? row * cellSize.y : -row * cellSize.y;
+            var x = columnStartFromLeft ? column * cellSize.x : -column * cellSize.x;
+            var y = rowStartFromTop ? -row * cellSize.y : row * cellSize.y;
 
             Vector3 position = Vector3.zero;
             switch (plane)
@@ -28,7 +28,7 @@ namespace BoardCoordinateSystem
                     position = new Vector3(x, 0, y);
                     break;
                 case Plane.YZ:
-                    position = new Vector3(0, x, y);
+                    position = new Vector3(0, y, x);
                     break;
             }
 
@@ -50,14 +50,14 @@ namespace BoardCoordinateSystem
                     y = position.z;
                     break;
                 case Plane.YZ:
-                    x = position.y;
-                    y = position.z;
+                    x = position.z;
+                    y = position.y;
                     break;
             }
 
-            var row = rowStartDirection == Direction.Up ? y / cellSize.y : -y / cellSize.y;
-            var column = columnStartDirection == Direction.Left ? x / cellSize.x : -x / cellSize.x;
-            return new Coordinate((int)row, (int)column);
+            var row = rowStartFromTop ? Mathf.RoundToInt(-y / cellSize.y) : Mathf.RoundToInt(y / cellSize.y);
+            var column = columnStartFromLeft ? Mathf.RoundToInt(x / cellSize.x) : Mathf.RoundToInt(-x / cellSize.x);
+            return new Coordinate(row, column);
         }
     }
 }
