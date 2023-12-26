@@ -161,7 +161,7 @@ namespace BoardCoordinateSystem
         
         public bool IsAdjacent(Coordinate coordinate)
         {
-            return Mathf.Abs(R - coordinate.R) + Mathf.Abs(C - coordinate.C) == 1;
+            return Distance(coordinate) == 1;
         }
 
         public Direction[] GetPerpendicularDirections()
