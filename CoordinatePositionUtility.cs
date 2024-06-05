@@ -34,66 +34,74 @@ namespace BoardCoordinateSystem
 
             return position;
         }
-        
-        
-  private Vector3 CalculateBoardCenterOffset(int rowCount, int columnCount)
-    {
-        // Calculate the total size of the board
-        float boardWidth = (columnCount - 1) * cellSize.x;
-        float boardHeight = (rowCount - 1) * cellSize.y;
 
-        // Calculate the offset to the center of the board
-        Vector3 centerOffset = Vector3.zero;
 
-        switch (plane)
+        private Vector3 CalculateBoardCenterOffset(int rowCount, int columnCount)
         {
-            case Plane.XY:
-                centerOffset = new Vector3(boardWidth / 2f, -boardHeight / 2f, 0f);
-                break;
-            case Plane.XZ:
-                centerOffset = new Vector3(boardWidth / 2f, 0f, -boardHeight / 2f);
-                break;
-            case Plane.YZ:
-                centerOffset = new Vector3(0f, boardHeight / 2f, -boardWidth / 2f);
-                break;
+            // Calculate the total size of the board
+            float boardWidth = (columnCount - 1) * cellSize.x;
+            float boardHeight = (rowCount - 1) * cellSize.y;
+
+            // Calculate the offset to the center of the board
+            Vector3 centerOffset = Vector3.zero;
+
+            switch (plane)
+            {
+                case Plane.XY:
+                    centerOffset = new Vector3(columnStartFromLeft ? boardWidth / 2f : -boardWidth / 2f, 
+                        rowStartFromTop ? -boardHeight / 2f : boardHeight / 2f, 
+                        0f);
+                    break;
+                case Plane.XZ:
+                    centerOffset = new Vector3(columnStartFromLeft ? boardWidth / 2f : -boardWidth / 2f, 
+                        0f, 
+                        rowStartFromTop ? -boardHeight / 2f : boardHeight / 2f);
+                    break;
+                case Plane.YZ:
+                    centerOffset = new Vector3(0f, 
+                        rowStartFromTop ? -boardHeight / 2f : boardHeight / 2f, 
+                        columnStartFromLeft ? boardWidth / 2f : -boardWidth / 2f);
+                    break;
+            }
+
+            return centerOffset;
         }
 
-        return centerOffset;
-    }
+        public Vector3 ConvertCoordinateToPosition(Coordinate coordinate, Transform transform, int rowCount,
+            int columnCount)
+        {
+            // Convert the coordinate to position using the utility class
+            Vector3 localPosition = ConvertCoordinateToPosition(coordinate);
 
-    public Vector3 ConvertCoordinateToPosition(Coordinate coordinate, Transform transform, int rowCount, int columnCount)
-    {
-        // Convert the coordinate to position using the utility class
-        Vector3 localPosition = ConvertCoordinateToPosition(coordinate);
+            // Calculate the offset to the center of the board
+            Vector3 boardCenterOffset = CalculateBoardCenterOffset(rowCount, columnCount);
 
-        // Calculate the offset to the center of the board
-        Vector3 boardCenterOffset = CalculateBoardCenterOffset(rowCount, columnCount);
+            // Adjust the local position by subtracting the center offset
+            localPosition -= boardCenterOffset;
 
-        // Adjust the local position by subtracting the center offset
-        localPosition -= boardCenterOffset;
+            // Convert the local position to world coordinates
+            Vector3 worldPosition = transform.TransformPoint(localPosition);
 
-        // Convert the local position to world coordinates
-        Vector3 worldPosition = transform.TransformPoint(localPosition);
+            return worldPosition;
+        }
 
-        return worldPosition;
-    }
+        public Coordinate ConvertPositionToCoordinate(Vector3 worldPosition, Transform transform, int rowCount,
+            int columnCount)
+        {
+            // Convert the world position to local coordinates
+            Vector3 localPosition = transform.InverseTransformPoint(worldPosition);
 
-    public Coordinate ConvertPositionToCoordinate(Vector3 worldPosition,Transform transform, int rowCount, int columnCount)
-    {
-        // Convert the world position to local coordinates
-        Vector3 localPosition = transform.InverseTransformPoint(worldPosition);
+            // Calculate the offset to the center of the board
+            Vector3 boardCenterOffset = CalculateBoardCenterOffset(rowCount, columnCount);
 
-        // Calculate the offset to the center of the board
-        Vector3 boardCenterOffset = CalculateBoardCenterOffset(rowCount, columnCount);
+            // Adjust the local position by adding the center offset
+            localPosition += boardCenterOffset;
 
-        // Adjust the local position by adding the center offset
-        localPosition += boardCenterOffset;
+            // Convert the local position to coordinate using the utility class
+            Coordinate coordinate = ConvertPositionToCoordinate(localPosition);
 
-        // Convert the local position to coordinate using the utility class
-        Coordinate coordinate = ConvertPositionToCoordinate(localPosition);
-
-        return coordinate;
-    }
+            return coordinate;
+        }
 
         public Coordinate ConvertPositionToCoordinate(Vector3 position)
         {
